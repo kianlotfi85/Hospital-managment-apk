@@ -44,7 +44,7 @@ bool signUp(const user &u)
     if (!file)
     {
         std::cout << "Error opening users file for writing!\n";
-        exit(1);
+        return false; 
     }
     int upper = 0, digit = 0, lower = 0;
     for (unsigned char i : u.password)
@@ -61,7 +61,7 @@ bool signUp(const user &u)
     {
         std::cout << "\n you'r password is not a strong password,\n"
                   << "your password must have at least 1 digit , 1 alpha and upper and lower alpha!\n\n";
-        exit(1);
+        return false; 
     }
     else
     {
@@ -113,7 +113,7 @@ struct patient
     std::string Weight;
     std::string Height;
     std::string nationalNumber;
-    int symptoms;
+    std::vector<int> symptoms; 
     std::string DrugsPrescription;
 };
 
@@ -187,9 +187,10 @@ void patientFile(patient &u, symptoms &s)
 
     symptoms user_current_symptoms;
 
-    while (std::cin >> u.symptoms)
+    int current_symptom; 
+    while (std::cin >> current_symptom)
     {
-        int current_symptom = u.symptoms;
+        u.symptoms.push_back(current_symptom); 
         checking_symptoms(user_current_symptoms, current_symptom);
     }
 
@@ -278,18 +279,36 @@ void teriage_patient(patient &p, symptoms &s, hospital_departments &h)
         h.PsychiatryDepartment = true;
         std::cout << "\nplease go to Psychiatry Department :)" << std::endl;
     }
-    else if (std::stoi(p.age) < 18)
+    else 
     {
-        h.PediatricsDepartment = true;
-        std::cout << "\n\nplease go to pediatric department :)" << std::endl;
+        int patientAge = 0;
+        try {
+            patientAge = std::stoi(p.age); 
+        } catch (...) {}
+        
+        if (patientAge < 18)
+        {
+            h.PediatricsDepartment = true;
+            std::cout << "\n\nplease go to pediatric department :)" << std::endl;
+        }
     }
 }
 
 void bloodPresureTaking(int &naclUse, int &SBP, patient p)
 {
     std::cout << "\nplease Enter how much you use nacl daily?\n1-Rarely(0 - 2 mg)\n2-sometimes(2 - 5mg)\n3- somuch(5 mg) :\n";
-    std::cin >> naclUse;
-    int weight = std::stoi(p.Weight);
+   
+    while (!(std::cin >> naclUse)) {
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "Invalid input! Please enter a number: \n";
+    }
+
+    int weight = 0;
+    try {
+        weight = std::stoi(p.Weight); 
+    } catch (...) {}
+
     int option = 0;
     switch (naclUse)
     {
@@ -313,21 +332,24 @@ void bloodPresureTaking(int &naclUse, int &SBP, patient p)
     patientFile.close();
 }
 
-int drugInteraction()
+int drugInteraction(patient p) 
 {
     int patientAnswer;
     std::cout << "Do you use any pain killer?\n1-Yes\n2-No" << std::endl;
-    std::cin >> patientAnswer;
+
+    while (!(std::cin >> patientAnswer)) {
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "Invalid input! Please enter a number: \n";
+    }
+
     if (patientAnswer == 1)
     {
-        std::ifstream file("patientFile.txt");
-        std::string word, target = "warfarin";
-        while (file >> word)
+        
+        if (p.DrugsPrescription.find("warfarin") != std::string::npos ||
+            p.DrugsPrescription.find("Warfarin") != std::string::npos)
         {
-            if (word == target)
-            {
-                return true;
-            }
+            return true;
         }
     }
     return false;
@@ -338,7 +360,11 @@ void blood_group(std::string &patient_bloodGroup, int &patient_RH)
     int userChoice;
     std::string father_blood;
     std::cout << "plz choose your father blood group:\n1- A\n2- B\n3- AB\n4- O\n";
-    std::cin >> userChoice;
+    
+    while (!(std::cin >> userChoice)) {
+        std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "Invalid input! Try again:\n";
+    }
 
     switch (userChoice)
     {
@@ -357,7 +383,12 @@ void blood_group(std::string &patient_bloodGroup, int &patient_RH)
     }
 
     std::cout << "plz choose your Mother blood group:\n1- A\n2- B\n3- AB\n4- O\n";
-    std::cin >> userChoice;
+    
+    while (!(std::cin >> userChoice)) {
+        std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "Invalid input! Try again:\n";
+    }
+
     std::string mother_blood;
     switch (userChoice)
     {
@@ -377,11 +408,18 @@ void blood_group(std::string &patient_bloodGroup, int &patient_RH)
 
     int motherRH; // 0 : NEGATIVE 1: POSITIVE
     std::cout << "choose your mother Rh:\n0 : negative\n1 : positive" << std::endl;
-    std::cin >> motherRH;
+  
+    while (!(std::cin >> motherRH)) {
+        std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "Invalid input! Try again:\n";
+    }
 
     int fatherRH;
     std::cout << "choose your father RH:\n0 : negative\n1 : positive" << std::endl;
-    std::cin >> fatherRH;
+    while (!(std::cin >> fatherRH)) {
+        std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "Invalid input! Try again:\n";
+    }
 
     std::mt19937 rng(std::random_device{}());
     std::uniform_int_distribution<int> dist(1, 3);
@@ -507,10 +545,16 @@ int QTake(int &x)
 {
     while (true)
     {
-        if (!(std::cin >> x))
-        {
+    
+        if (!(std::cin >> x)) {
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "ohhh! you Entered a not valid value,\nplease inter a valid value:\n";
+            continue;
+        }
+        
+        if (x > 4 || x < 1)
+        {
             std::cout << "ohhh! you Entered a not valid value,\nplease inter a valid value:\n";
             continue;
         }
@@ -540,6 +584,7 @@ void questionBox()
               << "2‌:It applies to me to a small extent.\n3:It applies to me to a large extent."
               << "\n4:It applies to me completely and intensely.\n\n";
 
+    // باگ ۶: حذف ضرب‌های اضافه (3* و 4* و 2*) برای درست کار کردن شروط پایین
     std::cout << "I worry too much about everyday matters.\n";
     anxiety += QTake(bullsheee);
     std::cout << "If someone is upset with me, it is very important to me.\n";
@@ -550,7 +595,7 @@ void questionBox()
     std::cout << "\n\n\n";
     std::cout << "///////////////////////////////////////////////////////////////////////";
     std::cout << "DEPRESSION";
-    std::cout << "///////////////////////////////////////////////////////////////////////";
+    std::cout << "///////////////////////////////////////////////////////////////////////\n\n";
 
     std::cout << "Feelings of guilt or worthlessness.\n";
     depression += QTake(bullsheee);
@@ -571,58 +616,53 @@ void questionBox()
     std::cout << "I cannot easily distance myself from stressful thoughts.\n";
     stress += QTake(bullsheee);
 
-    int level_anxiety = 3 * anxiety;
-    int level_depression = 4 * depression;
-    int level_stress = 2 * stress;
-    //........................................................................................................
     std::string anxiety_level;
     std::string depression_level;
     std::string stress_level;
 
     // just for anxiety ://
-    if(level_anxiety >= 3 && level_anxiety <= 6)
+    if (anxiety >= 3 && anxiety <= 6)
     {
         anxiety_level = "Low";
     }
-    else if(level_anxiety >= 7 && level_anxiety <= 9)
+    else if (anxiety >= 7 && anxiety <= 9)
     {
         anxiety_level = "Mid";
     }
-    else if(level_anxiety >= 10 && level_anxiety <= 12)
+    else if (anxiety >= 10 && anxiety <= 12)
     {
         anxiety_level = "High";
     }
 
-
-    if(level_depression >= 4 && level_depression <= 8)
+    if (depression >= 4 && depression <= 8)
     {
         depression_level = "Low";
     }
-    else if(level_depression >= 9 && level_depression <= 12)
+    else if (depression >= 9 && depression <= 12)
     {
         depression_level = "Mid";
     }
-    else if(level_depression >= 13 and level_depression <= 16)
+    else if (depression >= 13 and depression <= 16)
     {
         depression_level = "High";
     }
 
-    if(level_stress >= 2 && level_stress <= 4)
+    if (stress >= 2 && stress <= 4)
     {
         stress_level = "Low";
     }
-    else if(level_stress >= 5 && level_stress <= 6)
+    else if (stress >= 5 && stress <= 6)
     {
         stress_level = "Mid";
     }
-    else if(level_stress >= 7 && level_stress <= 8)
+    else if (stress >= 7 && stress <= 8)
     {
         stress_level = "High";
     }
 
-    patientFile << 
-
-
+    patientFile << "\nStress level is: " << stress_level << "\n"
+                << "Depression level is: " << depression_level << "\n"
+                << "Anxiety level is: " << anxiety_level << "\n";
 }
 
 int main()
@@ -671,7 +711,7 @@ int main()
                 {
                     bloodPresureTaking(naclUse, SBP, currentPatient);
                     int *bloodpresurePtr = &SBP;
-                    if (drugInteraction())
+                    if (drugInteraction(currentPatient)) // باگ ۳
                     {
                         std::cout << "\nyou have drug interaction! " << std::endl;
                     }
@@ -680,8 +720,12 @@ int main()
                 }
                 else if (currentDep.PediatricsDepartment)
                 {
-                    int weight = std::stoi(currentPatient.Weight);
-                    int height = std::stoi(currentPatient.Height);
+                    int weight = 0, height = 0;
+                    try {
+                        weight = std::stoi(currentPatient.Weight); // باگ ۱: حل مشکل کرش کردن
+                        height = std::stoi(currentPatient.Height);
+                    } catch (...) {}
+
                     if (height > 0)
                     {
                         double h = height / 100.0;
@@ -697,11 +741,44 @@ int main()
         else
         {
             std::cout << "\n\naccout NOT found  let's signup you now! " << std::endl;
-            signUp(currentUser);
-
-            if (currentUser.role == "patient")
+            
+            
+            if (signUp(currentUser)) 
             {
-                patientFile(currentPatient, currentSymptoms);
+                if (currentUser.role == "patient")
+                {
+                    patientFile(currentPatient, currentSymptoms);
+                    teriage_patient(currentPatient, currentSymptoms, currentDep);
+                    if (currentDep.emergencyDepartment)
+                    {
+                        bloodPresureTaking(naclUse, SBP, currentPatient);
+                        int *bloodpresurePtr = &SBP;
+                        if (drugInteraction(currentPatient))
+                        {
+                            std::cout << "\nyou have drug interaction! " << std::endl;
+                        }
+                        blood_group(patient_blood_group, RH);
+                        GSS_calculation(currentSymptoms, currentUser);
+                    }
+                    else if (currentDep.PediatricsDepartment)
+                    {
+                        int weight = 0, height = 0;
+                        try {
+                            weight = std::stoi(currentPatient.Weight); 
+                            height = std::stoi(currentPatient.Height);
+                        } catch (...) {}
+
+                        if (height > 0)
+                        {
+                            double h = height / 100.0;
+                            double BMI = weight / (h * h);
+                        }
+                    }
+                    else if (currentDep.PsychiatryDepartment)
+                    {
+                        questionBox();
+                    }
+                }
             }
         }
     }
