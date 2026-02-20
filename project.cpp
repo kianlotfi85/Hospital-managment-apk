@@ -44,7 +44,7 @@ bool signUp(const user &u)
     if (!file)
     {
         std::cout << "Error opening users file for writing!\n";
-        return false; 
+        return false;
     }
     int upper = 0, digit = 0, lower = 0;
     for (unsigned char i : u.password)
@@ -61,7 +61,7 @@ bool signUp(const user &u)
     {
         std::cout << "\n you'r password is not a strong password,\n"
                   << "your password must have at least 1 digit , 1 alpha and upper and lower alpha!\n\n";
-        return false; 
+        return false;
     }
     else
     {
@@ -108,12 +108,13 @@ void takeInformations(user &u)
 
 struct patient
 {
+
     std::string Gender;
     std::string age;
     std::string Weight;
     std::string Height;
     std::string nationalNumber;
-    std::vector<int> symptoms; 
+    std::vector<int> symptoms;
     std::string DrugsPrescription;
 };
 
@@ -128,6 +129,13 @@ struct symptoms
     bool difficulty_breathing = false; // 7 - خفگی و تنگی نفس
     bool Heart_attack = false;         // 8 - حمله قلبی
     bool stress = false;               // 9 - استرس
+};
+
+struct hospital_departments
+{
+    bool emergencyDepartment = false;  // بخش اورژانس
+    bool PsychiatryDepartment = false; // بخش روان
+    bool PediatricsDepartment = false; // بخش اطفال
 };
 
 void checking_symptoms(symptoms &current_patient, int num)
@@ -164,7 +172,7 @@ void checking_symptoms(symptoms &current_patient, int num)
     }
 }
 
-void patientFile(patient &u, symptoms &s)
+void patientFile(user CurrentUser, patient &u, symptoms &s)
 {
     std::cout << "please inter your gender: ";
     getline(std::cin, u.Gender);
@@ -187,10 +195,10 @@ void patientFile(patient &u, symptoms &s)
 
     symptoms user_current_symptoms;
 
-    int current_symptom; 
+    int current_symptom;
     while (std::cin >> current_symptom)
     {
-        u.symptoms.push_back(current_symptom); 
+        u.symptoms.push_back(current_symptom);
         checking_symptoms(user_current_symptoms, current_symptom);
     }
 
@@ -201,66 +209,64 @@ void patientFile(patient &u, symptoms &s)
     getline(std::cin, u.DrugsPrescription);
 
     std::ofstream patientFile("patientFile.txt", std::ios::app);
+    std::string file_name = CurrentUser.name + ".txt";
+    std::ofstream userFile(file_name, std::ios::app);
 
-    patientFile << "Gender: " << u.Gender << "\n"
-                << "age: " << u.age << '\n'
-                << "weight: " << u.Weight << '\n'
-                << "National Number: " << u.nationalNumber << '\n'
-                << "drugs: " << u.DrugsPrescription << '\n';
+    userFile << ".......................New visit........................\n";
+    userFile << "Gender: " << u.Gender << "\n"
+             << "age: " << u.age << '\n'
+             << "weight: " << u.Weight << '\n'
+             << "National Number: " << u.nationalNumber << '\n'
+             << "drugs: " << u.DrugsPrescription << '\n';
 
     if (user_current_symptoms.Amputation == true)
     {
-        patientFile << "symptom: " << "Ampution\n";
+        userFile << "symptom: " << "Ampution\n";
         s.Amputation = true;
     }
     if (user_current_symptoms.Burn_injury == true)
     {
-        patientFile << "symptom: " << "Burn injury\n";
+        userFile << "symptom: " << "Burn injury\n";
         s.Burn_injury = true;
     }
     if (user_current_symptoms.Concussio == true)
     {
-        patientFile << "symptom: " << "concussion\n";
+        userFile << "symptom: " << "concussion\n";
         s.Concussio = true;
     }
     if (user_current_symptoms.difficulty_breathing == true)
     {
-        patientFile << "symptom: " << "difficulty of breathing\n";
+        userFile << "symptom: " << "difficulty of breathing\n";
         s.difficulty_breathing = true;
     }
     if (user_current_symptoms.Heart_attack == true)
     {
-        patientFile << "symptom: " << "Heart attack\n";
+        userFile << "symptom: " << "Heart attack\n";
         s.Heart_attack = true;
     }
     if (user_current_symptoms.Heart_palpitation == true)
     {
-        patientFile << "symptom: " << "heart palpitation\n";
+        userFile << "symptom: " << "heart palpitation\n";
         s.Heart_palpitation = true;
     }
     if (user_current_symptoms.Heavy_bleeding)
     {
-        patientFile << "symptom: " << "heavy bleeding\n";
+        userFile << "symptom: " << "heavy bleeding\n";
         s.Heavy_bleeding = true;
     }
     if (user_current_symptoms.injuries_accident)
     {
-        patientFile << "symptom: " << "accident injury\n";
+        userFile << "symptom: " << "accident injury\n";
         s.injuries_accident = true;
     }
     if (user_current_symptoms.stress == true)
     {
-        patientFile << "symptom: " << "stress\n";
+        userFile << "symptom: " << "stress\n";
         s.stress = true;
     }
-}
 
-struct hospital_departments
-{
-    bool emergencyDepartment = false;  // بخش اورژانس
-    bool PsychiatryDepartment = false; // بخش روان
-    bool PediatricsDepartment = false; // بخش اطفال
-};
+    userFile << "..........................\n";
+}
 
 int urgentOrNot(symptoms &s)
 {
@@ -279,13 +285,17 @@ void teriage_patient(patient &p, symptoms &s, hospital_departments &h)
         h.PsychiatryDepartment = true;
         std::cout << "\nplease go to Psychiatry Department :)" << std::endl;
     }
-    else 
+    else
     {
         int patientAge = 0;
-        try {
-            patientAge = std::stoi(p.age); 
-        } catch (...) {}
-        
+        try
+        {
+            patientAge = std::stoi(p.age);
+        }
+        catch (...)
+        {
+        }
+
         if (patientAge < 18)
         {
             h.PediatricsDepartment = true;
@@ -294,20 +304,25 @@ void teriage_patient(patient &p, symptoms &s, hospital_departments &h)
     }
 }
 
-void bloodPresureTaking(int &naclUse, int &SBP, patient p)
+void bloodPresureTaking(int &naclUse, int &SBP, patient p, user &u)
 {
     std::cout << "\nplease Enter how much you use nacl daily?\n1-Rarely(0 - 2 mg)\n2-sometimes(2 - 5mg)\n3- somuch(5 mg) :\n";
-   
-    while (!(std::cin >> naclUse)) {
+
+    while (!(std::cin >> naclUse))
+    {
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::cout << "Invalid input! Please enter a number: \n";
     }
 
     int weight = 0;
-    try {
-        weight = std::stoi(p.Weight); 
-    } catch (...) {}
+    try
+    {
+        weight = std::stoi(p.Weight);
+    }
+    catch (...)
+    {
+    }
 
     int option = 0;
     switch (naclUse)
@@ -327,17 +342,18 @@ void bloodPresureTaking(int &naclUse, int &SBP, patient p)
     }
     SBP = weight + 40 + option;
     std::cout << "you'r SBP is: " << SBP << std::endl;
-    std::ofstream patientFile("patientFile.txt", std::ios::app);
-    patientFile << "patient SBP is: " << SBP << std::endl;
-    patientFile.close();
+    std::ofstream userFile(u.name + ".txt", std::ios::app);
+    userFile << "patient SBP is: " << SBP << std::endl;
+    userFile.close();
 }
 
-int drugInteraction(patient p) 
+int drugInteraction(patient p)
 {
     int patientAnswer;
     std::cout << "Do you use any pain killer?\n1-Yes\n2-No" << std::endl;
 
-    while (!(std::cin >> patientAnswer)) {
+    while (!(std::cin >> patientAnswer))
+    {
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::cout << "Invalid input! Please enter a number: \n";
@@ -345,7 +361,7 @@ int drugInteraction(patient p)
 
     if (patientAnswer == 1)
     {
-        
+
         if (p.DrugsPrescription.find("warfarin") != std::string::npos ||
             p.DrugsPrescription.find("Warfarin") != std::string::npos)
         {
@@ -355,14 +371,16 @@ int drugInteraction(patient p)
     return false;
 }
 
-void blood_group(std::string &patient_bloodGroup, int &patient_RH)
+void blood_group(std::string &patient_bloodGroup, int &patient_RH, user &u)
 {
     int userChoice;
     std::string father_blood;
     std::cout << "plz choose your father blood group:\n1- A\n2- B\n3- AB\n4- O\n";
-    
-    while (!(std::cin >> userChoice)) {
-        std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    while (!(std::cin >> userChoice))
+    {
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::cout << "Invalid input! Try again:\n";
     }
 
@@ -383,9 +401,11 @@ void blood_group(std::string &patient_bloodGroup, int &patient_RH)
     }
 
     std::cout << "plz choose your Mother blood group:\n1- A\n2- B\n3- AB\n4- O\n";
-    
-    while (!(std::cin >> userChoice)) {
-        std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    while (!(std::cin >> userChoice))
+    {
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::cout << "Invalid input! Try again:\n";
     }
 
@@ -408,16 +428,20 @@ void blood_group(std::string &patient_bloodGroup, int &patient_RH)
 
     int motherRH; // 0 : NEGATIVE 1: POSITIVE
     std::cout << "choose your mother Rh:\n0 : negative\n1 : positive" << std::endl;
-  
-    while (!(std::cin >> motherRH)) {
-        std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    while (!(std::cin >> motherRH))
+    {
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::cout << "Invalid input! Try again:\n";
     }
 
     int fatherRH;
     std::cout << "choose your father RH:\n0 : negative\n1 : positive" << std::endl;
-    while (!(std::cin >> fatherRH)) {
-        std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    while (!(std::cin >> fatherRH))
+    {
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::cout << "Invalid input! Try again:\n";
     }
 
@@ -486,7 +510,6 @@ void blood_group(std::string &patient_bloodGroup, int &patient_RH)
         patient_RH = 1;
     }
 
-    std::ofstream patientFile("patientFile.txt", std::ios::app);
     if (patient_bloodGroup == "A" && patient_RH == 1)
         patient_bloodGroup = "A+";
     else if (patient_bloodGroup == "A" && patient_RH == 0)
@@ -500,10 +523,11 @@ void blood_group(std::string &patient_bloodGroup, int &patient_RH)
     else if (patient_bloodGroup == "O" && patient_RH == 0)
         patient_bloodGroup = "O-";
 
-    patientFile << "patient blood group is: " << patient_bloodGroup << "\n";
+    std::ofstream userFile(u.name + ".txt", std::ios::app);
+    userFile << "patient blood group is: " << patient_bloodGroup << "\n";
 }
 
-int GSS_calculation(symptoms &s, user c)
+int GSS_calculation(symptoms &s, user &c)
 {
     std::mt19937 rng(std::random_device{}());
     std::uniform_int_distribution<int> distE(1, 4);
@@ -518,18 +542,21 @@ int GSS_calculation(symptoms &s, user c)
     bool bastari;
     std::ofstream bastarie("bastari.txt", std::ios::app);
     std::ofstream tarkhiseh("tarkhis.txt", std::ios::app);
+    std::ofstream userFile(c.name + ".txt", std::ios::app);
 
     if (GCS < 13 || s.Heavy_bleeding || s.Concussio || s.Amputation || s.injuries_accident || s.difficulty_breathing)
     {
         bastari = true;
-        bastarie << "user " << c.name << " has been hospitalized ." << std::endl;
-        bastarie << "............................................\n";
+        bastarie << c.name << "\n";
+        userFile << "Status: (Admitted)  GCS: " << GCS << "\n";
+        std::cout << "Patient Hospitalized.\n";
     }
     else
     {
         bastari = false;
-        tarkhiseh << c.name << " Discharge from the hospital. ";
-        tarkhiseh << "...........................................\n";
+        tarkhiseh << c.name << "\n";
+        userFile << "Status: (Discharged)  GCS: " << GCS << "\n";
+        std::cout << "Patient Discharged.\n";
     }
     return GCS;
 }
@@ -545,14 +572,15 @@ int QTake(int &x)
 {
     while (true)
     {
-    
-        if (!(std::cin >> x)) {
+
+        if (!(std::cin >> x))
+        {
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::cout << "ohhh! you Entered a not valid value,\nplease inter a valid value:\n";
             continue;
         }
-        
+
         if (x > 4 || x < 1)
         {
             std::cout << "ohhh! you Entered a not valid value,\nplease inter a valid value:\n";
@@ -565,9 +593,9 @@ int QTake(int &x)
     }
 }
 
-void questionBox()
+void questionBox(user &u)
 {
-    std::ofstream patientFile("patientFile.txt", std::ios::app);
+
     int anxiety = 0;
     int depression = 0;
     int stress = 0;
@@ -584,7 +612,6 @@ void questionBox()
               << "2‌:It applies to me to a small extent.\n3:It applies to me to a large extent."
               << "\n4:It applies to me completely and intensely.\n\n";
 
-    // باگ ۶: حذف ضرب‌های اضافه (3* و 4* و 2*) برای درست کار کردن شروط پایین
     std::cout << "I worry too much about everyday matters.\n";
     anxiety += QTake(bullsheee);
     std::cout << "If someone is upset with me, it is very important to me.\n";
@@ -660,9 +687,12 @@ void questionBox()
         stress_level = "High";
     }
 
-    patientFile << "\nStress level is: " << stress_level << "\n"
-                << "Depression level is: " << depression_level << "\n"
-                << "Anxiety level is: " << anxiety_level << "\n";
+    std::ofstream userFile(u.name + ".txt", std::ios::app);
+    userFile << "\n--- Psychology Test Results ---\n"
+             << "Stress level: " << stress_level << "\n"
+             << "Depression level: " << depression_level << "\n"
+             << "Anxiety level: " << anxiety_level << "\n"
+             << "-------------------------------\n";
 }
 
 int main()
@@ -671,117 +701,80 @@ int main()
     {
         showMenu();
         int choice;
+
         if (!(std::cin >> choice))
         {
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            std::cout << "your output is invalid, please try again/ \n";
             continue;
         }
-
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        std::string rol_choice = role_choicing(choice);
-        if (rol_choice.empty())
+        std::string role_choice = role_choicing(choice);
+        if (role_choice.empty())
         {
-            std::cout << "invalid choice! please select 1 , 2 or 3!. \n";
             continue;
         }
-
         user currentUser;
         patient currentPatient;
         symptoms currentSymptoms;
         hospital_departments currentDep;
         int naclUse = 0;
-        int SBP; // patient SBP
+        int SBP;
         int RH;
         std::string patient_blood_group;
 
-        currentUser.role = rol_choice;
+        currentUser.role = role_choice;
         takeInformations(currentUser);
-
+        bool loggedIn = false;
         if (signIn(currentUser))
         {
-            std::cout << "Welcome " << currentUser.name << " you are an " << currentUser.role << "\n";
-            if (currentUser.role == "patient")
-            {
-                patientFile(currentPatient, currentSymptoms);
-                teriage_patient(currentPatient, currentSymptoms, currentDep);
-                if (currentDep.emergencyDepartment)
-                {
-                    bloodPresureTaking(naclUse, SBP, currentPatient);
-                    int *bloodpresurePtr = &SBP;
-                    if (drugInteraction(currentPatient)) // باگ ۳
-                    {
-                        std::cout << "\nyou have drug interaction! " << std::endl;
-                    }
-                    blood_group(patient_blood_group, RH);
-                    GSS_calculation(currentSymptoms, currentUser);
-                }
-                else if (currentDep.PediatricsDepartment)
-                {
-                    int weight = 0, height = 0;
-                    try {
-                        weight = std::stoi(currentPatient.Weight); // باگ ۱: حل مشکل کرش کردن
-                        height = std::stoi(currentPatient.Height);
-                    } catch (...) {}
-
-                    if (height > 0)
-                    {
-                        double h = height / 100.0;
-                        double BMI = weight / (h * h);
-                    }
-                }
-                else if (currentDep.PsychiatryDepartment)
-                {
-                    questionBox();
-                }
-            }
+            std::cout << "Welcome back " << currentUser.name << "\n";
+            loggedIn = true;
         }
         else
         {
-            std::cout << "\n\naccout NOT found  let's signup you now! " << std::endl;
-            
-            
-            if (signUp(currentUser)) 
+            std::cout << "Account not found, Lets signing you up...\n";
+            if (signUp(currentUser))
             {
-                if (currentUser.role == "patient")
-                {
-                    patientFile(currentPatient, currentSymptoms);
-                    teriage_patient(currentPatient, currentSymptoms, currentDep);
-                    if (currentDep.emergencyDepartment)
-                    {
-                        bloodPresureTaking(naclUse, SBP, currentPatient);
-                        int *bloodpresurePtr = &SBP;
-                        if (drugInteraction(currentPatient))
-                        {
-                            std::cout << "\nyou have drug interaction! " << std::endl;
-                        }
-                        blood_group(patient_blood_group, RH);
-                        GSS_calculation(currentSymptoms, currentUser);
-                    }
-                    else if (currentDep.PediatricsDepartment)
-                    {
-                        int weight = 0, height = 0;
-                        try {
-                            weight = std::stoi(currentPatient.Weight); 
-                            height = std::stoi(currentPatient.Height);
-                        } catch (...) {}
+                loggedIn = true;
+            }
+        }
 
-                        if (height > 0)
-                        {
-                            double h = height / 100.0;
-                            double BMI = weight / (h * h);
-                        }
-                    }
-                    else if (currentDep.PsychiatryDepartment)
-                    {
-                        questionBox();
-                    }
+        if (loggedIn && currentUser.role == "patient")
+        {
+            patientFile(currentUser, currentPatient, currentSymptoms);
+
+            teriage_patient(currentPatient, currentSymptoms, currentDep);
+            if (currentDep.emergencyDepartment)
+            {
+
+                bloodPresureTaking(naclUse, SBP, currentPatient, currentUser);
+
+                if (drugInteraction(currentPatient))
+                {
+                    std::cout << "\nWarning: Drug interaction detected!\n";
                 }
+
+                blood_group(patient_blood_group, RH, currentUser);
+
+                GSS_calculation(currentSymptoms, currentUser);
+            }
+             else if (currentDep.PediatricsDepartment)
+            {
+             
+                int weight = 0, height = 0;
+                try {
+                    weight = std::stoi(currentPatient.Weight);
+                    height = std::stoi(currentPatient.Height);
+                } catch (...) {}
+                
+            }
+            else if (currentDep.PsychiatryDepartment)
+            {
+                questionBox(currentUser);
             }
         }
     }
-
     return 0;
 }
